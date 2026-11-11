@@ -1,0 +1,3 @@
+# Salin ke .dev.vars untuk development lokal (jangan di-commit)
+ADMIN_PASSWORD="ganti-dengan-password-admin"
+SESSION_SECRET="ganti-dengan-string-acak-panjang"

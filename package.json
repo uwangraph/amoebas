@@ -6,7 +6,7 @@
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
-		"preview": "vite preview",
+		"preview": "npm run build && wrangler dev",
 		"prepare": "svelte-kit sync || echo ''",
 		"format": "prettier --write .",
 		"lint": "prettier --check .",
@@ -15,10 +15,13 @@
 		"db:push": "drizzle-kit push",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
-		"db:studio": "drizzle-kit studio"
+		"db:studio": "drizzle-kit studio",
+		"deploy": "npm run build && wrangler deploy",
+		"d1:migrate:local": "wrangler d1 migrations apply amoebas-db --local",
+		"d1:migrate:remote": "wrangler d1 migrations apply amoebas-db --remote"
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-auto": "^6.0.0",
+		"@sveltejs/adapter-cloudflare": "^7.2.10",
 		"@sveltejs/kit": "^2.22.0",
 		"@sveltejs/vite-plugin-svelte": "^6.0.0",
 		"@tailwindcss/typography": "^0.5.15",
@@ -35,10 +38,11 @@
 		"tailwindcss": "^4.1.13",
 		"vite": "^7.0.4",
 		"vitest": "^3.2.3",
-		"vitest-browser-svelte": "^0.1.0"
+		"vitest-browser-svelte": "^0.1.0",
+		"wrangler": "^4.160.0"
 	},
 	"dependencies": {
-		"@supabase/supabase-js": "^2.57.4",
-		"postgres": "^3.4.5"
+		"postgres": "^3.4.5",
+		"three": "^0.187.0"
 	}
 }

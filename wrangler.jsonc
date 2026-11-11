@@ -1,0 +1,40 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "amoebas",
+	// Akun Cloudflare: uwangraph
+	"account_id": "cdcd2c8177520b10e161f95fb0e12220",
+	"main": ".svelte-kit/cloudflare/_worker.js",
+	"compatibility_date": "2026-11-01",
+	"compatibility_flags": ["nodejs_als"],
+	"assets": {
+		"binding": "ASSETS",
+		"directory": ".svelte-kit/cloudflare"
+	},
+	"observability": { "enabled": true },
+
+	// Metadata galeri
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "amoebas-db",
+			"database_id": "ed9f5638-de97-4397-9096-d3a63b44fa72",
+			"migrations_dir": "migrations"
+		}
+	],
+
+	// File foto galeri
+	"r2_buckets": [
+		{
+			"binding": "GALLERY",
+			"bucket_name": "amoebas-gallery"
+		}
+	],
+
+	"vars": {
+		// Email yang boleh login sebagai admin (pisahkan dengan koma)
+		"ADMIN_EMAILS": "amoebasarchery20@gmail.com,uwanmhry@gmail.com"
+	}
+	// Secrets (atur dengan `npx wrangler secret put <NAMA>`):
+	//   ADMIN_PASSWORD  - password login admin
+	//   SESSION_SECRET  - kunci acak untuk menandatangani cookie sesi
+}
