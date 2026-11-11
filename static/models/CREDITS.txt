@@ -1,0 +1,16 @@
+Model 3D yang dipakai di hero Amoebas Archery
+=============================================
+
+horse.glb
+  Model kuda (beserta animasi gallop) oleh Mirada untuk proyek
+  "3 Dreams of Black" / ROME (https://rome.mrdoob.com,
+  https://github.com/dataarts/3-dreams-of-black).
+  Dirilis di bawah Apache License 2.0 - lihat LICENSE-Apache-2.0.txt.
+  Perubahan: data UV/warna vertex dihapus dan dikompres (meshopt);
+  permukaan dihaluskan (Loop subdivision) saat runtime.
+
+rider.glb
+  Karakter "X Bot" dari Mixamo (https://www.mixamo.com), Adobe.
+  Dipakai sesuai ketentuan Mixamo (bebas royalti untuk digunakan
+  di dalam proyek). Perubahan: animasi dihapus, jumlah poligon
+  dikurangi, dikompres (meshopt); pose diatur lewat kode.
