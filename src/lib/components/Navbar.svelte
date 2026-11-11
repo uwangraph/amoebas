@@ -1,263 +1,278 @@
 <script>
-  import LoginModal from './LoginModal.svelte';
-  import { onMount } from 'svelte';
-  import { isAdmin, logout } from '$lib/auth';
+	import LoginModal from './LoginModal.svelte';
+	import { onMount } from 'svelte';
+	import { isAdmin, logout } from '$lib/auth';
 
-  let logoClickCount = 0;
-  let logoClickTimeout;
-  let isMenuOpen = false;
-  let scrollY = 0;
-  let lastScrollY = 0;
-  let showNavbar = true;
-  let loginModal;
-  let adminStatus = false;
+	let logoClickCount = 0;
+	let logoClickTimeout;
+	let isMenuOpen = false;
+	let scrollY = 0;
+	let lastScrollY = 0;
+	let showNavbar = true;
+	let loginModal;
+	let adminStatus = false;
 
-  // default aktifin home
-  let activeSection = '#home';
+	let activeSection = '#home';
 
-  const navItems = [
-    { name: 'Home', href: '#home' },
-    { name: 'About', href: '#about' },
-    { name: 'Services', href: '#services' },
-    { name: 'Pricing', href: '#pricing' },
-    { name: 'Gallery', href: '#gallery' },
-    { name: 'Contact', href: '#contact' }
-  ];
+	const navItems = [
+		{ name: 'Home', href: '#home' },
+		{ name: 'About', href: '#about' },
+		{ name: 'Services', href: '#services' },
+		{ name: 'Pricing', href: '#pricing' },
+		{ name: 'Gallery', href: '#gallery' },
+		{ name: 'Contact', href: '#contact' }
+	];
 
-  onMount(() => {
-    const unsubscribe = isAdmin.subscribe(value => {
-      adminStatus = value;
-    });
+	const socials = [
+		{ name: 'Instagram', href: 'https://instagram.com/@amoebas.archery' },
+		{ name: 'TikTok', href: 'https://tiktok.com/@amoebas.archery' },
+		{ name: 'YouTube', href: 'https://youtube.com/@amoebasarchery' }
+	];
 
-    // perbaikan observer
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            activeSection = `#${entry.target.id}`;
-          }
-        });
-      },
-      {
-        threshold: [0.3, 0.6],
-        rootMargin: "0px 0px -30% 0px"
-      }
-    );
+	onMount(() => {
+		const unsubscribe = isAdmin.subscribe((value) => {
+			adminStatus = value;
+		});
 
-    navItems.forEach(item => {
-      const el = document.querySelector(item.href);
-      if (el) observer.observe(el);
-    });
+		const observer = new IntersectionObserver(
+			(entries) => {
+				entries.forEach((entry) => {
+					if (entry.isIntersecting) activeSection = `#${entry.target.id}`;
+				});
+			},
+			{ threshold: [0.3, 0.6], rootMargin: '0px 0px -30% 0px' }
+		);
 
-    return () => {
-      unsubscribe();
-      observer.disconnect();
-    };
-  });
-  
-  const handleLogoClick = () => {
-    logoClickCount++;
-    clearTimeout(logoClickTimeout);
-    
-    if (logoClickCount === 1) {
-      logoClickTimeout = setTimeout(() => {
-        scrollToHome();
-        logoClickCount = 0;
-      }, 800);
-    } else if (logoClickCount === 3) {
-      clearTimeout(logoClickTimeout);
-      if (!adminStatus) {
-        loginModal?.open();
-      }
-      logoClickCount = 0;
-    } else if (logoClickCount > 3) {
-      logoClickCount = 0;
-    }
-  };
-  
-  const scrollToHome = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-  
-  const scrollToSection = (href) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-    isMenuOpen = false;
-  };
-  
-  const toggleMenu = () => {
-    isMenuOpen = !isMenuOpen;
-  };
+		navItems.forEach((item) => {
+			const el = document.querySelector(item.href);
+			if (el) observer.observe(el);
+		});
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      adminStatus = false;
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
-  };
+		return () => {
+			unsubscribe();
+			observer.disconnect();
+		};
+	});
 
-  const handleLoginSuccess = () => {
-    console.log('Admin login successful!');
-    adminStatus = true;
-  };
+	// Klik 1x = ke atas, klik 3x = buka login admin
+	const handleLogoClick = () => {
+		logoClickCount++;
+		clearTimeout(logoClickTimeout);
 
-  // Navbar hide/show
-  $: {
-    if (scrollY > lastScrollY && scrollY > 80) {
-      showNavbar = false;
-    } else {
-      showNavbar = true;
-    }
-    lastScrollY = scrollY;
-  }
+		if (logoClickCount === 1) {
+			logoClickTimeout = setTimeout(() => {
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+				logoClickCount = 0;
+			}, 800);
+		} else if (logoClickCount === 3) {
+			if (!adminStatus) loginModal?.open();
+			logoClickCount = 0;
+		} else if (logoClickCount > 3) {
+			logoClickCount = 0;
+		}
+	};
+
+	const scrollToSection = (href) => {
+		isMenuOpen = false;
+		document.querySelector(href)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	};
+
+	const handleLogout = async () => {
+		try {
+			await logout();
+			adminStatus = false;
+		} catch (error) {
+			console.error('Logout error:', error);
+		}
+	};
+
+	const handleLoginSuccess = () => {
+		adminStatus = true;
+	};
+
+	const handleKeydown = (e) => {
+		if (e.key === 'Escape' && isMenuOpen) isMenuOpen = false;
+	};
+
+	$: {
+		showNavbar = isMenuOpen || !(scrollY > lastScrollY && scrollY > 120);
+		lastScrollY = scrollY;
+	}
+
+	$: if (typeof document !== 'undefined') {
+		document.body.style.overflow = isMenuOpen ? 'hidden' : '';
+	}
 </script>
 
-<svelte:window bind:scrollY />
+<svelte:window bind:scrollY on:keydown={handleKeydown} />
 
-<!-- Navbar -->
-<nav 
-  class="fixed top-0 left-0 right-0 z-40 transition-all duration-300"
-  class:navbar-scrolled={scrollY > 50}
-  class:translate-y-0={showNavbar}
-  class:-translate-y-full={!showNavbar}
+<nav
+	class="fixed inset-x-0 top-0 z-50 transition-transform duration-500 ease-out-expo"
+	class:-translate-y-full={!showNavbar}
 >
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between h-16 lg:h-20">
-      
-      <!-- Logo Section -->
-      <div class="flex items-center space-x-3">
-        <button
-          on:click={handleLogoClick}
-          class="group relative flex items-center space-x-3 focus:outline-none rounded-lg p-2"
-          title="Click for home, triple-click for admin"
-        >
-          <div class="relative">
-            <div 
-              class="w-10 h-10 lg:w-12 lg:h-12 rounded-full flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-active:scale-95 bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg"
-            >
-              <svg 
-                class="w-5 h-5 lg:w-6 lg:h-6 text-white"
-                fill="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-            </div>
-          </div>
-          <div class="hidden sm:block">
-            <h1 class="text-lg lg:text-xl font-bold tracking-wide text-white">
-              AMOEBAS
-            </h1>
-            <p class="text-xs lg:text-sm font-medium text-blue-300">
-              ARCHERY
-            </p>
-          </div>
-        </button>
-      </div>
+	<div class="mx-auto flex max-w-[1600px] items-center justify-between px-4 py-4 sm:px-8 sm:py-6">
+		<!-- Logo -->
+		<button
+			on:click={handleLogoClick}
+			class="group flex items-center gap-3 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-azure"
+			title="Amoebas Archery"
+			aria-label="Amoebas Archery, kembali ke atas"
+		>
+			<span
+				class="grid h-11 w-11 place-items-center rounded-full transition-all duration-500 ease-out-expo group-hover:rotate-90 {isMenuOpen
+					? 'bg-sun text-ink'
+					: 'bg-azure text-white'}"
+			>
+				<!-- Ikon target -->
+				<svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<circle cx="12" cy="12" r="9" />
+					<circle cx="12" cy="12" r="5" />
+					<circle cx="12" cy="12" r="1.5" fill="currentColor" />
+				</svg>
+			</span>
+			<span
+				class="hidden text-left leading-none font-semibold tracking-tight transition-colors duration-500 sm:block {isMenuOpen
+					? 'text-white'
+					: 'text-ink'}"
+			>
+				<span class="block text-lg">Amoebas</span>
+				<span class="block text-[11px] tracking-[0.3em] uppercase opacity-60">Archery</span>
+			</span>
+		</button>
 
-      <!-- Desktop Navigation -->
-      <div class="hidden lg:flex items-center space-x-8">
-        {#each navItems as item}
-          <button
-            on:click={() => scrollToSection(item.href)}
-            class="relative group px-3 py-2 text-sm font-medium transition-all duration-300 rounded-lg text-white hover:text-blue-300 {activeSection === item.href ? 'bg-blue-800 bg-opacity-30' : ''}"
-          >
-            {item.name}
-            <div 
-              class="absolute bottom-0 left-3 right-3 h-0.5 transition-all duration-300 transform bg-blue-400 {activeSection === item.href ? 'scale-x-100' : 'scale-x-0'}"
-            ></div>
-          </button>
-        {/each}
-        
-        <!-- Admin Logout Button -->
-        {#if adminStatus}
-          <button
-            on:click={handleLogout}
-            class="px-4 py-2 text-sm font-medium text-white bg-red-600 bg-opacity-80 hover:bg-red-700 hover:bg-opacity-90 rounded-lg transition-colors duration-300 backdrop-blur-sm"
-          >
-            Logout Admin
-          </button>
-        {/if}
-      </div>
+		<!-- Desktop -->
+		<div class="flex items-center gap-2">
+			<div
+				class="hidden items-center gap-1 rounded-full bg-white/80 p-1.5 shadow-[0_8px_30px_rgba(10,15,46,0.06)] ring-1 ring-ink/5 backdrop-blur-xl lg:flex"
+				class:opacity-0={isMenuOpen}
+				class:pointer-events-none={isMenuOpen}
+			>
+				{#each navItems.slice(1, 5) as item}
+					<button
+						on:click={() => scrollToSection(item.href)}
+						class="rounded-full px-4 py-2 text-sm font-medium transition-colors duration-300 {activeSection ===
+						item.href
+							? 'bg-ink text-white'
+							: 'text-ink hover:bg-sky'}"
+					>
+						{item.name}
+					</button>
+				{/each}
+			</div>
 
-      <!-- Mobile Menu Button -->
-      <div class="lg:hidden flex items-center space-x-4">
-        {#if adminStatus}
-          <button
-            on:click={handleLogout}
-            class="px-3 py-1 text-xs font-medium text-white bg-red-600 bg-opacity-80 hover:bg-red-700 hover:bg-opacity-90 rounded transition-colors duration-300 backdrop-blur-sm"
-          >
-            Logout
-          </button>
-        {/if}
-        <button
-          on:click={toggleMenu}
-          class="p-2 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-400 text-white"
-          aria-label="Toggle menu"
-          aria-expanded={isMenuOpen}
-        >
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            {#if isMenuOpen}
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            {:else}
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            {/if}
-          </svg>
-        </button>
-      </div>
-    </div>
-  </div>
+			{#if adminStatus}
+				<button
+					on:click={handleLogout}
+					class="hidden rounded-full bg-white px-4 py-3 text-sm font-semibold text-red-600 ring-1 ring-red-200 transition-colors hover:bg-red-50 sm:block"
+				>
+					Logout Admin
+				</button>
+			{/if}
 
-  <!-- Mobile Menu -->
-  <div 
-    class="lg:hidden transition-all duration-300 overflow-hidden {isMenuOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'}"
-  >
-    <div class="px-4 py-4 space-y-2 border-t border-blue-700 border-opacity-30 pb-6 backdrop-blur-lg bg-blue-900 bg-opacity-50">
-      {#each navItems as item}
-        <button
-          on:click={() => scrollToSection(item.href)}
-          class="block w-full text-left px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 text-white hover:bg-blue-800 hover:bg-opacity-30 {activeSection === item.href ? 'bg-blue-800 bg-opacity-30' : ''}"
-        >
-          {item.name}
-        </button>
-      {/each}
-      
-      {#if adminStatus}
-        <button
-          on:click={handleLogout}
-          class="w-full text-left px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 text-white bg-red-600 bg-opacity-80 hover:bg-red-700 hover:bg-opacity-90 backdrop-blur-sm"
-        >
-          Logout Admin
-        </button>
-      {/if}
-      
-      <button
-        on:click={() => scrollToSection('#contact')}
-        class="w-full mt-4 px-6 py-3 rounded-full font-semibold text-base transition-all duration-300 bg-blue-600 bg-opacity-80 hover:bg-blue-700 hover:bg-opacity-90 text-white backdrop-blur-sm"
-      >
-        Daftar Sekarang
-      </button>
-    </div>
-  </div>
+			<button
+				on:click={() => scrollToSection('#contact')}
+				class="btn-pill hidden bg-azure !py-2.5 !pr-2.5 text-white hover:bg-ink md:inline-flex"
+				class:opacity-0={isMenuOpen}
+				class:pointer-events-none={isMenuOpen}
+			>
+				Hubungi Kami
+				<span class="btn-icon bg-sun text-ink">
+					<svg
+						class="h-3.5 w-3.5"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6" /></svg
+					>
+				</span>
+			</button>
+
+			<!-- Tombol menu -->
+			<button
+				on:click={() => (isMenuOpen = !isMenuOpen)}
+				class="group flex h-12 items-center gap-3 rounded-full pr-5 pl-5 text-sm font-semibold shadow-[0_8px_30px_rgba(10,15,46,0.06)] ring-1 transition-colors duration-500 {isMenuOpen
+					? 'bg-sun text-ink ring-sun'
+					: 'bg-white text-ink ring-ink/5'}"
+				aria-label="Toggle menu"
+				aria-expanded={isMenuOpen}
+			>
+				<span class="hidden sm:inline">{isMenuOpen ? 'Tutup' : 'Menu'}</span>
+				<span class="relative block h-3 w-5">
+					<span
+						class="absolute left-0 h-0.5 w-5 rounded bg-current transition-all duration-500 ease-out-expo {isMenuOpen
+							? 'top-1/2 -translate-y-1/2 rotate-45'
+							: 'top-0'}"
+					></span>
+					<span
+						class="absolute left-0 h-0.5 w-5 rounded bg-current transition-all duration-500 ease-out-expo {isMenuOpen
+							? 'top-1/2 -translate-y-1/2 -rotate-45'
+							: 'top-full -translate-y-full'}"
+					></span>
+				</span>
+			</button>
+		</div>
+	</div>
 </nav>
 
-<!-- Login Modal -->
-<LoginModal bind:this={loginModal} on:loginSuccess={handleLoginSuccess} />
+<!-- Menu fullscreen -->
+<div
+	class="fixed inset-0 z-40 bg-navy text-white transition-[clip-path] duration-700 ease-out-expo"
+	style="clip-path: {isMenuOpen ? 'circle(150% at 100% 0%)' : 'circle(0% at 100% 0%)'};"
+	aria-hidden={!isMenuOpen}
+	inert={!isMenuOpen}
+>
+	<div class="mx-auto flex h-full max-w-[1600px] flex-col justify-between px-4 pt-28 pb-8 sm:px-8">
+		<ul class="space-y-1">
+			{#each navItems as item, i}
+				<li
+					class="overflow-hidden transition-all duration-700 ease-out-expo"
+					style="transition-delay: {isMenuOpen
+						? 150 + i * 50
+						: 0}ms; transform: translateY({isMenuOpen ? 0 : 40}px); opacity: {isMenuOpen ? 1 : 0};"
+				>
+					<button
+						on:click={() => scrollToSection(item.href)}
+						class="group flex w-full items-baseline gap-4 text-left sm:gap-8"
+					>
+						<span class="w-8 text-sm text-white/40 tabular-nums">0{i + 1}</span>
+						<span
+							class="display text-5xl transition-all duration-500 ease-out-expo group-hover:translate-x-4 group-hover:text-sun sm:text-7xl lg:text-8xl {activeSection ===
+							item.href
+								? 'text-sun'
+								: ''}"
+						>
+							{item.name}
+						</span>
+					</button>
+				</li>
+			{/each}
+		</ul>
 
-<style>
-  nav {
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    background-color: rgba(30, 58, 138, 0.5);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  }
-  
-  .navbar-scrolled {
-    background-color: rgba(30, 58, 138, 0.7);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-  }
-</style>
+		<div
+			class="flex flex-col gap-6 border-t border-white/15 pt-6 sm:flex-row sm:items-end sm:justify-between"
+		>
+			<div class="flex flex-wrap gap-2">
+				{#each socials as s}
+					<a
+						href={s.href}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="rounded-full border border-white/20 px-4 py-2 text-sm transition-colors hover:border-sun hover:bg-sun hover:text-ink"
+						>{s.name}</a
+					>
+				{/each}
+				{#if adminStatus}
+					<button
+						on:click={handleLogout}
+						class="rounded-full border border-red-400/50 px-4 py-2 text-sm text-red-300 transition-colors hover:bg-red-500 hover:text-white"
+					>
+						Logout Admin
+					</button>
+				{/if}
+			</div>
+			<p class="text-sm text-white/50">Banjaran, Kab. Bandung · 0811 2101 290</p>
+		</div>
+	</div>
+</div>
+
+<LoginModal bind:this={loginModal} on:loginSuccess={handleLoginSuccess} />

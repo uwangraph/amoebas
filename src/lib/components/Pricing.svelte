@@ -1,295 +1,155 @@
 <script>
-  import { onMount } from 'svelte';
-  
-  let mounted = false;
-  let scrollPosition = 0;
-  
-  onMount(() => {
-    mounted = true;
-    
-    const handleScroll = () => {
-      scrollPosition = window.scrollY;
-    };
-    
-    window.addEventListener('scroll', handleScroll);
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  });
+	import { reveal } from '$lib/actions/reveal';
+	import { fly } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 
-  const horseRidingPrices = [
-    { type: "TRIAL", price: "180K", description: "per pertemuan, @ 45 menit" },
-    { type: "MEMBER", price: "1.250K", description: "10 pertemuan, @ 45 menit, sertifikat" }
-  ];
+	const categories = [
+		{
+			id: 'riding',
+			name: 'Horse Riding',
+			items: [
+				{ type: 'TRIAL', price: '180K', description: 'per pertemuan, @ 45 menit' },
+				{ type: 'MEMBER', price: '1.250K', description: '10 pertemuan, @ 45 menit, sertifikat' }
+			]
+		},
+		{
+			id: 'hba',
+			name: 'Horseback Archery',
+			items: [
+				{ type: 'TRIAL', price: '150K', description: 'per pertemuan, @ 45 menit' },
+				{ type: 'MEMBER', price: '1.400K', description: '10 pertemuan, @ 45 menit, sertifikat' }
+			]
+		},
+		{
+			id: 'group',
+			name: 'Paket Grup',
+			items: [
+				{
+					type: 'PENGENALAN & MENUNGGANG',
+					price: '450K',
+					description: 'per 1 kuda, 3 jam, 10 orang'
+				},
+				{ type: 'PEMANTAPAN', price: '450K', description: 'per 1 kuda, 3 jam, 5 orang' }
+			]
+		},
+		{
+			id: 'coach',
+			name: 'Archery + Pelatih',
+			items: [
+				{ type: 'TRIAL', price: '45K', description: 'bawa alat sendiri' },
+				{ type: 'BASIC', price: '400K', description: '10 pertemuan' },
+				{ type: 'COMPETITION', price: '65K', description: 'bawa alat sendiri' }
+			]
+		},
+		{
+			id: 'self',
+			name: 'Mandiri & Sewa',
+			items: [
+				{ type: 'MANDIRI', price: '15K', description: 'per 2 jam, bawa alat sendiri' },
+				{ type: 'SEWA ALAT', price: '25K', description: 'per 1 jam, busur + 6 arrow + quiver' }
+			]
+		},
+		{
+			id: 'other',
+			name: 'Lainnya',
+			items: [
+				{ type: 'FUN RIDING', price: '15K', description: '2 helling circle track' },
+				{ type: 'ENDURANCE AND TRACKING', price: 'Hubungi CP', description: 'Penawaran khusus' }
+			]
+		}
+	];
 
-  const horsebackArcheryPrices = [
-    { type: "TRIAL", price: "150K", description: "per pertemuan, @ 45 menit" },
-    { type: "MEMBER", price: "1.400K", description: "10 pertemuan, @ 45 menit, sertifikat" }
-  ];
+	let active = categories[0].id;
+	$: current = categories.find((c) => c.id === active);
 
-  const groupPrices = [
-    { type: "PENGENALAN & MENUNGGANG", price: "450K", description: "per 1 kuda, 3 jam, 10 orang" },
-    { type: "PEMANTAPAN", price: "450K", description: "per 1 kuda, 3 jam, 5 orang" }
-  ];
-
-  const otherPrices = [
-    { type: "FUN RIDING", price: "15K", description: "2 helling circle track" },
-    { type: "ENDURANCE AND TRACKING", price: "Hubungi CP", description: "Penawaran khusus" }
-  ];
-
-  const archeryWithCoach = [
-    { type: "TRIAL", price: "45K", description: "bawa alat sendiri" },
-    { type: "BASIC", price: "400K", description: "10 pertemuan" },
-    { type: "COMPETITION", price: "65K", description: "bawa alat sendiri" }
-  ];
-
-  const archeryWithoutCoach = [
-    { type: "MANDIRI", price: "15K", description: "per 2 jam, bawa alat sendiri" }
-  ];
-
-  const equipmentRental = [
-    { type: "SEWA ALAT", price: "25K", description: "per 1 jam, busur + 6 arrow + quiver" }
-  ];
+	const book = () =>
+		document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 </script>
 
-<section id="pricing" class="relative py-32 overflow-hidden">
-  <!-- Multi-layer Background -->
-  <div class="absolute inset-0">
-    <!-- Base gradient -->
-    <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900"></div>
-    
-    <!-- Overlay gradients -->
-    <div class="absolute inset-0 bg-gradient-to-tr from-yellow-500/10 via-transparent to-amber-500/5"></div>
-    <div class="absolute inset-0 bg-gradient-to-bl from-transparent via-blue-800/20 to-cyan-900/10"></div>
-  </div>
+<section id="pricing" class="relative bg-paper py-24 sm:py-36">
+	<div class="mx-auto max-w-[1600px] px-4 sm:px-8">
+		<div class="mb-14 grid gap-8 lg:grid-cols-12 lg:items-end">
+			<div class="lg:col-span-7" use:reveal>
+				<p class="eyebrow mb-6 text-ink/70">Paket Harga</p>
+				<h2 class="display text-6xl text-ink sm:text-8xl">
+					Pilih paket<br /><span class="text-azure">terbaik</span> Anda
+				</h2>
+			</div>
+			<p
+				class="text-lg leading-relaxed text-ink/65 lg:col-span-4 lg:col-start-9"
+				use:reveal={{ delay: 100 }}
+			>
+				Pilih paket yang sesuai dengan kebutuhan Anda. Diskon khusus tersedia untuk grup dan member
+				jangka panjang.
+			</p>
+		</div>
 
-  <!-- Animated Background Elements -->
-  <div class="absolute inset-0 opacity-10">
-    {#each Array(20) as _, i}
-      <div 
-        class="absolute rounded-full bg-yellow-400 animate-float"
-        style="
-          left: {Math.random() * 100}%;
-          top: {Math.random() * 100}%;
-          width: {2 + Math.random() * 3}px;
-          height: {2 + Math.random() * 3}px;
-          animation-delay: {Math.random() * 5}s;
-          animation-duration: {4 + Math.random() * 3}s;
-        "
-      ></div>
-    {/each}
-  </div>
+		<!-- Tab kategori -->
+		<div class="-mx-4 mb-8 overflow-x-auto px-4 sm:mx-0 sm:px-0" use:reveal>
+			<div class="flex w-max gap-2" role="tablist" aria-label="Kategori harga">
+				{#each categories as c}
+					<button
+						role="tab"
+						aria-selected={active === c.id}
+						on:click={() => (active = c.id)}
+						class="rounded-full px-5 py-3 text-sm font-semibold whitespace-nowrap transition-colors duration-300 {active ===
+						c.id
+							? 'bg-azure text-white'
+							: 'bg-white text-ink ring-1 ring-ink/10 hover:bg-sky'}"
+					>
+						{c.name}
+					</button>
+				{/each}
+			</div>
+		</div>
 
-  <!-- Decorative Elements -->
-  <div class="absolute top-20 right-10 opacity-5">
-    <div class="w-32 h-32 border-4 border-yellow-400 rounded-full animate-spin-slow"></div>
-  </div>
-  <div class="absolute bottom-20 left-10 opacity-5">
-    <div class="w-24 h-24 border-4 border-blue-400 rounded-full animate-spin-slow" style="animation-direction: reverse;"></div>
-  </div>
+		<!-- Daftar harga -->
+		<div class="overflow-hidden rounded-[2rem] bg-white ring-1 ring-ink/5" use:reveal>
+			<div class="flex items-center justify-between border-b border-ink/10 px-6 py-5 sm:px-10">
+				<h3 class="text-xl font-semibold tracking-tight">{current.name}</h3>
+				<span class="text-sm text-ink/50">{current.items.length} pilihan</span>
+			</div>
 
-  <div class="container mx-auto px-6 relative z-10">
-    <!-- Section Title -->
-    <div class="text-center mb-20">
-      <div class="flex justify-center items-center gap-3 mb-4">
-        <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-        <span class="text-yellow-400 text-sm font-semibold tracking-widest uppercase">Paket Harga</span>
-        <div class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-      </div>
-      
-      <h2 class="text-4xl lg:text-5xl font-black text-white mb-4 leading-tight">
-        Pilih Paket
-        <span class="inline-block bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-300 bg-clip-text text-transparent">
-          Terbaik Anda
-        </span>
-      </h2>
-      
-      <div class="flex justify-center items-center gap-3 mb-6">
-        <div class="w-16 h-1 bg-gradient-to-r from-yellow-400 to-transparent"></div>
-        <div class="w-2 h-2 bg-yellow-400 rounded-full"></div>
-        <div class="w-16 h-1 bg-gradient-to-l from-yellow-400 to-transparent"></div>
-      </div>
-      
-      <p class="text-xl text-gray-300 max-w-3xl mx-auto">
-        Pilih paket yang sesuai dengan kebutuhan Anda. Diskon khusus tersedia untuk grup dan member jangka panjang.
-      </p>
-    </div>
+			{#key active}
+				<ul>
+					{#each current.items as item, i}
+						<li
+							in:fly={{ y: 24, duration: 600, delay: i * 70, easing: cubicOut }}
+							class="group grid grid-cols-[1fr_auto] items-center gap-4 border-b border-ink/10 px-6 py-7 transition-colors duration-300 last:border-0 hover:bg-sun sm:grid-cols-12 sm:px-10 sm:py-9"
+						>
+							<span class="hidden text-sm text-ink/40 tabular-nums sm:col-span-1 sm:block"
+								>0{i + 1}</span
+							>
+							<div class="sm:col-span-6">
+								<h4 class="text-xl font-semibold tracking-tight sm:text-2xl">{item.type}</h4>
+								<p class="mt-1 text-sm text-ink/55 group-hover:text-ink/75">{item.description}</p>
+							</div>
+							<span
+								class="display text-right text-4xl text-azure transition-colors group-hover:text-ink sm:col-span-4 sm:text-6xl"
+							>
+								{item.price}
+							</span>
+							<button
+								on:click={book}
+								class="hidden h-12 w-12 place-items-center justify-self-end rounded-full bg-ink text-white transition-transform duration-500 ease-out-expo group-hover:-rotate-45 sm:col-span-1 sm:grid"
+								aria-label="Pesan {item.type}"
+							>
+								<svg
+									class="h-4 w-4"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6" /></svg
+								>
+							</button>
+						</li>
+					{/each}
+				</ul>
+			{/key}
+		</div>
 
-    <div 
-      class="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-      class:opacity-100={mounted}
-      class:opacity-0={!mounted}
-    >
-      <!-- Horse Riding -->
-      <div class="group relative bg-gradient-to-br from-slate-800/50 to-blue-900/50 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden shadow-2xl hover:shadow-yellow-500/10 transition-all duration-500 transform hover:scale-[1.02]">
-        <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        <div class="relative p-8">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
-              <svg class="w-6 h-6 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </div>
-            <h3 class="text-2xl font-bold text-white">HORSE RIDING</h3>
-          </div>
-          <div class="space-y-6">
-            {#each horseRidingPrices as item}
-              <div class="flex justify-between items-center py-4 border-b border-white/10 group-hover:border-yellow-400/20 transition-colors">
-                <div>
-                  <h4 class="font-bold text-white text-lg">{item.type}</h4>
-                  <p class="text-gray-400 text-sm mt-1">{item.description}</p>
-                </div>
-                <span class="text-yellow-400 font-black text-xl">{item.price}</span>
-              </div>
-            {/each}
-          </div>
-        </div>
-      </div>
-
-      <!-- Horseback Archery -->
-      <div class="group relative bg-gradient-to-br from-slate-800/50 to-blue-900/50 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden shadow-2xl hover:shadow-yellow-500/10 transition-all duration-500 transform hover:scale-[1.02]">
-        <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        <div class="relative p-8">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
-              <svg class="w-6 h-6 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
-              </svg>
-            </div>
-            <h3 class="text-2xl font-bold text-white">HORSEBACK ARCHERY</h3>
-          </div>
-          <div class="space-y-6">
-            {#each horsebackArcheryPrices as item}
-              <div class="flex justify-between items-center py-4 border-b border-white/10 group-hover:border-yellow-400/20 transition-colors">
-                <div>
-                  <h4 class="font-bold text-white text-lg">{item.type}</h4>
-                  <p class="text-gray-400 text-sm mt-1">{item.description}</p>
-                </div>
-                <span class="text-yellow-400 font-black text-xl">{item.price}</span>
-              </div>
-            {/each}
-          </div>
-        </div>
-      </div>
-
-      <!-- Group Packages -->
-      <div class="group relative bg-gradient-to-br from-slate-800/50 to-blue-900/50 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden shadow-2xl hover:shadow-yellow-500/10 transition-all duration-500 transform hover:scale-[1.02]">
-        <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        <div class="relative p-8">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
-              <svg class="w-6 h-6 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-              </svg>
-            </div>
-            <h3 class="text-2xl font-bold text-white">PAKET GRUP</h3>
-          </div>
-          <div class="space-y-6">
-            {#each groupPrices as item}
-              <div class="flex justify-between items-center py-4 border-b border-white/10 group-hover:border-yellow-400/20 transition-colors">
-                <div>
-                  <h4 class="font-bold text-white text-lg">{item.type}</h4>
-                  <p class="text-gray-400 text-sm mt-1">{item.description}</p>
-                </div>
-                <span class="text-yellow-400 font-black text-xl">{item.price}</span>
-              </div>
-            {/each}
-          </div>
-        </div>
-      </div>
-
-      <!-- Other Services -->
-      <div class="group relative bg-gradient-to-br from-slate-800/50 to-blue-900/50 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden shadow-2xl hover:shadow-yellow-500/10 transition-all duration-500 transform hover:scale-[1.02]">
-        <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        <div class="relative p-8">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
-              <svg class="w-6 h-6 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-              </svg>
-            </div>
-            <h3 class="text-2xl font-bold text-white">LAYANAN LAINNYA</h3>
-          </div>
-          <div class="space-y-6">
-            {#each otherPrices as item}
-              <div class="flex justify-between items-center py-4 border-b border-white/10 group-hover:border-yellow-400/20 transition-colors">
-                <div>
-                  <h4 class="font-bold text-white text-lg">{item.type}</h4>
-                  <p class="text-gray-400 text-sm mt-1">{item.description}</p>
-                </div>
-                <span class="text-yellow-400 font-black text-xl">{item.price}</span>
-              </div>
-            {/each}
-          </div>
-        </div>
-      </div>
-
-      <!-- Archery with Coach -->
-      <div class="group relative bg-gradient-to-br from-slate-800/50 to-blue-900/50 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden shadow-2xl hover:shadow-yellow-500/10 transition-all duration-500 transform hover:scale-[1.02]">
-        <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        <div class="relative p-8">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
-              <svg class="w-6 h-6 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-              </svg>
-            </div>
-            <h3 class="text-2xl font-bold text-white">ARCHERY (Dengan Pelatih)</h3>
-          </div>
-          <div class="space-y-6">
-            {#each archeryWithCoach as item}
-              <div class="flex justify-between items-center py-4 border-b border-white/10 group-hover:border-yellow-400/20 transition-colors">
-                <div>
-                  <h4 class="font-bold text-white text-lg">{item.type}</h4>
-                  <p class="text-gray-400 text-sm mt-1">{item.description}</p>
-                </div>
-                <span class="text-yellow-400 font-black text-xl">{item.price}</span>
-              </div>
-            {/each}
-          </div>
-        </div>
-      </div>
-
-      <!-- Archery without Coach & Equipment -->
-      <div class="group relative bg-gradient-to-br from-slate-800/50 to-blue-900/50 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden shadow-2xl hover:shadow-yellow-500/10 transition-all duration-500 transform hover:scale-[1.02]">
-        <div class="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-        <div class="relative p-8">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-xl flex items-center justify-center shadow-lg">
-              <svg class="w-6 h-6 text-blue-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-              </svg>
-            </div>
-            <h3 class="text-2xl font-bold text-white">ARCHERY (Tanpa Pelatih & Sewa)</h3>
-          </div>
-          <div class="space-y-6">
-            {#each archeryWithoutCoach as item}
-              <div class="flex justify-between items-center py-4 border-b border-white/10 group-hover:border-yellow-400/20 transition-colors">
-                <div>
-                  <h4 class="font-bold text-white text-lg">{item.type}</h4>
-                  <p class="text-gray-400 text-sm mt-1">{item.description}</p>
-                </div>
-                <span class="text-yellow-400 font-black text-xl">{item.price}</span>
-              </div>
-            {/each}
-            {#each equipmentRental as item}
-              <div class="flex justify-between items-center py-4 border-b border-white/10 group-hover:border-yellow-400/20 transition-colors">
-                <div>
-                  <h4 class="font-bold text-white text-lg">{item.type}</h4>
-                  <p class="text-gray-400 text-sm mt-1">{item.description}</p>
-                </div>
-                <span class="text-yellow-400 font-black text-xl">{item.price}</span>
-              </div>
-            {/each}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer Note -->
-    <div class="mt-16 text-center">
-      <p class="text-gray-400">* Harga dapat berubah sewaktu-waktu. Hubungi kami untuk informasi terbaru.</p>
-    </div>
-  </div>
+		<p class="mt-8 text-sm text-ink/50">
+			* Harga dapat berubah sewaktu-waktu. Hubungi kami untuk informasi terbaru.
+		</p>
+	</div>
 </section>

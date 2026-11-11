@@ -1,2 +1,105 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
+
+@theme {
+	--font-sans: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+
+	/* Palet: biru, kuning, putih */
+	--color-ink: #0a0f2e; /* biru sangat gelap untuk teks */
+	--color-navy: #0b1650; /* biru tua untuk section gelap */
+	--color-azure: #1f3bff; /* biru utama (aksen) */
+	--color-azure-600: #1530e0;
+	--color-sky: #dfe5ff; /* biru muda */
+	--color-sun: #ffd21f; /* kuning */
+	--color-sun-600: #f5c400;
+	--color-paper: #f3f5fb; /* putih kebiruan untuk latar */
+
+	--ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+	html {
+		scroll-behavior: smooth;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+	body {
+		@apply bg-paper font-sans text-ink;
+		margin: 0;
+	}
+	::selection {
+		background: var(--color-sun);
+		color: var(--color-ink);
+	}
+	section[id] {
+		scroll-margin-top: 80px;
+	}
+}
+
+@layer components {
+	/* Label kecil di atas judul section */
+	.eyebrow {
+		@apply inline-flex items-center gap-2 text-xs font-semibold tracking-[0.2em] uppercase;
+	}
+	.eyebrow::before {
+		content: '';
+		@apply inline-block h-2 w-2 rounded-full bg-sun;
+	}
+
+	/* Judul besar ala editorial */
+	.display {
+		@apply leading-[0.92] font-semibold tracking-[-0.045em];
+	}
+
+	/* Tombol pill */
+	.btn-pill {
+		@apply relative inline-flex items-center gap-3 overflow-hidden rounded-full px-6 py-3.5 text-sm font-semibold transition-colors duration-500;
+	}
+	.btn-pill .btn-icon {
+		@apply grid h-7 w-7 place-items-center rounded-full transition-transform duration-500 ease-out-expo;
+	}
+	.btn-pill:hover .btn-icon {
+		transform: rotate(-45deg);
+	}
+}
+
+/* Reveal saat scroll */
+[data-reveal] {
+	opacity: 0;
+	transform: translateY(40px);
+	transition:
+		opacity 1s var(--ease-out-expo),
+		transform 1.2s var(--ease-out-expo);
+	transition-delay: var(--reveal-delay, 0ms);
+}
+[data-reveal].is-visible {
+	opacity: 1;
+	transform: none;
+}
+
+/* Marquee */
+@keyframes marquee {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(-50%);
+	}
+}
+.animate-marquee {
+	animation: marquee 30s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+	[data-reveal] {
+		opacity: 1;
+		transform: none;
+		transition: none;
+	}
+	.animate-marquee {
+		animation: none;
+	}
+}
