@@ -1,6 +1,7 @@
 <script>
 	import LoginModal from './LoginModal.svelte';
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { isAdmin, logout } from '$lib/auth';
 
 	let logoClickCount = 0;
@@ -88,6 +89,7 @@
 
 	const handleLoginSuccess = () => {
 		adminStatus = true;
+		goto('/admin'); // setelah login, langsung ke halaman kelola galeri
 	};
 
 	const handleKeydown = (e) => {
@@ -161,6 +163,12 @@
 			</div>
 
 			{#if adminStatus}
+				<a
+					href="/admin"
+					class="hidden rounded-full bg-sun px-4 py-3 text-sm font-semibold text-ink transition-colors hover:bg-sun-600 sm:block"
+				>
+					Kelola Galeri
+				</a>
 				<button
 					on:click={handleLogout}
 					class="hidden rounded-full bg-white px-4 py-3 text-sm font-semibold text-red-600 ring-1 ring-red-200 transition-colors hover:bg-red-50 sm:block"
@@ -262,6 +270,11 @@
 					>
 				{/each}
 				{#if adminStatus}
+					<a
+						href="/admin"
+						class="rounded-full bg-sun px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-white"
+						>Kelola Galeri</a
+					>
 					<button
 						on:click={handleLogout}
 						class="rounded-full border border-red-400/50 px-4 py-2 text-sm text-red-300 transition-colors hover:bg-red-500 hover:text-white"
