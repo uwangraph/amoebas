@@ -1,55 +1,56 @@
-import { supabase } from './supabaseClient';
 import { writable } from 'svelte/store';
 
-// Store untuk state user dan admin
+// Store untuk state admin (email admin yang login, atau null)
 export const user = writable(null);
 export const isAdmin = writable(false);
 
-// List email admin
-const adminEmails = ['amoebasarchery20@gmail.com', 'uwanmhry@gmail.com'];
+/** @param {string | null} email */
+const setAdmin = (email) => {
+	user.set(email ? { email } : null);
+	isAdmin.set(!!email);
+};
 
-// Cek status admin
-const checkIsAdmin = (email) => adminEmails.includes(email);
+/** @param {Response} res */
+async function readError(res) {
+	const data = await res.json().catch(() => null);
+	return new Error(data?.message || `Request gagal (${res.status})`);
+}
 
-// Subscribe ke perubahan auth state
-supabase.auth.onAuthStateChange(async (_event, session) => {
-  if (session?.user) {
-    user.set(session.user);
-    isAdmin.set(checkIsAdmin(session.user.email));
-  } else {
-    user.set(null);
-    isAdmin.set(false);
-  }
-});
-
-// Login function
+// Login
 export const login = async (email, password) => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  });
-  if (error) throw error;
-  return data.user;
+	const res = await fetch('/api/auth', {
+		method: 'POST',
+		headers: { 'content-type': 'application/json' },
+		body: JSON.stringify({ email, password })
+	});
+	if (!res.ok) throw await readError(res);
+	const { admin } = await res.json();
+	setAdmin(admin);
+	return { email: admin };
 };
 
-// Logout function
+// Logout
 export const logout = async () => {
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
+	const res = await fetch('/api/auth', { method: 'DELETE' });
+	if (!res.ok) throw await readError(res);
+	setAdmin(null);
 };
 
-// Get current session
+// Ambil sesi saat ini
 export const getSession = async () => {
-  const { data: { session }, error } = await supabase.auth.getSession();
-  if (error) throw error;
-  return session;
+	const res = await fetch('/api/auth');
+	if (!res.ok) throw await readError(res);
+	const { admin } = await res.json();
+	return admin ? { user: { email: admin } } : null;
 };
 
-// Initialize auth saat app pertama kali load
+// Inisialisasi saat app pertama kali load
 export const initAuth = async () => {
-  const session = await getSession();
-  if (session?.user) {
-    user.set(session.user);
-    isAdmin.set(checkIsAdmin(session.user.email));
-  }
+	try {
+		const session = await getSession();
+		setAdmin(session?.user.email ?? null);
+	} catch (err) {
+		console.error('Gagal memeriksa sesi:', err);
+		setAdmin(null);
+	}
 };
